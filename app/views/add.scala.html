@@ -1,0 +1,122 @@
+@(username: String, person: Form[Person])(implicit flash: play.api.mvc.Flash)
+@import helper._
+@main("Create") {
+<header class="navbar navbar-fixed-top">
+  <nav>
+  	<ul class="nav nav-tabs">
+      <li style="float: right;" class="logout"><a href="@routes.Application.logout">Sign out</a></li>
+      <li style="float: right;" class="signedin">Signed in as @username</li>
+    </ul>
+ </nav>
+</header>
+  
+ <div id="Wrapper">
+    <div id="Container">
+	    <div class="left">
+	        <div class="col">
+	            <div class="chat-wrapper">
+	            	     <h1><img class="img-thumbnail" src="http://www.gravatar.com/avatar/@person.value.map(_.md5)?d=mm&s=80">
+                     	 Add a contact<!-- <span style="font-size:12px" class="label label-success">sdu</span> <span style="font-size:12px" class="label label-info">france</span>--></h1>
+	            	
+	            	 @flash.get("success").map { message =>
+        				<div class="alert alert-success">
+            				@message
+        				</div>
+    				}
+    				<form action="@routes.Application.add()" class="form-horizontal" role="form" method="POST">
+    				<input type="hidden" value="@person.value.map(_.dn).getOrElse("")" name="dn"/>
+	            	<input type="hidden" value="@person.value.map(_.tags).getOrElse("")" name="tags"/>
+	            	<input type="hidden" value="@person.value.map(_.lastname).getOrElse("")" name="lastname"/>
+	            	<input type="hidden" value="@person.value.map(_.alternatePhone).getOrElse("")" name="alternatePhone"/>
+	            	
+	            	
+	            	<div style="margin: 50px 0 20px">
+	            		
+	            		<div class="form-group">
+						    <label for="fullname" class="col-sm-2 control-label">Full name</label>
+						    <div class="col-sm-10">
+
+           				     <input type="text" class="form-control" name="fullname" id="fullname" placeholder="Full name" value="@person("fullname").value"> <span class="error">@person.error("fullname").map(x => Messages(x.message))</span>
+						    </div>
+						   </div>
+
+						  <div class="form-group">
+						    <label for="address" class="col-sm-2 control-label">Address</label>
+						    <div class="col-sm-10">
+						      <textarea class="form-control" id="address" name="address" placeholder="Address" rows="4">@person("address").value</textarea>
+						    </div>
+						  </div>
+
+	
+						  <div class="form-group">
+						    <label for="officePhone" class="col-sm-2 control-label">Office phone number</label>
+						    <div class="col-sm-10">
+						     <input type="text" class="form-control" id="officePhone" name="officePhone" placeholder="Office phone number" value="@person("officePhone").value"><span class="error">@person.error("officePhone").map(x => Messages(x.message))</span>
+						    </div>
+						  </div>
+						
+
+						  <div class="form-group">
+						    <label for="mobilePhone" class="col-sm-2 control-label">Mobile phone number</label>
+						    <div class="col-sm-10">
+						     <input type="text" class="form-control" id="mobilePhone" name="mobilePhone" placeholder="Office phone number" value="@person("mobilePhone").value"><span class="error">@person.error("mobilePhone").map(x => Messages(x.message))</span>
+						    </div>
+						  </div>
+
+						  <div class="form-group">
+						    <label for="homePhone" class="col-sm-2 control-label">Home phone number</label>
+						    <div class="col-sm-10">
+						     <input type="text" class="form-control" id="homePhone" name="homePhone" placeholder="Home phone number" value="@person("homePhone").value"><span class="error">@person.error("homePhone").map(x => Messages(x.message))</span>
+						    </div>
+						  </div>
+						
+						  <div class="form-group">
+						    <label for="email" class="col-sm-2 control-label">Email</label>
+						    <div class="col-sm-10">
+						     <input type="text" class="form-control" id="email" name="email" placeholder="Email" value="@person("email").value"><span class="error">@person.error("email").map(x => Messages(x.message))</span>
+						    </div>
+						  </div>
+
+						  <div class="form-group">
+						    <label for="displayName" class="col-sm-2 control-label">Display name</label>
+						    <div class="col-sm-10">
+						     <input type="text" class="form-control" id="displayName" name="displayname" placeholder="Display name" value="@person("displayname").value">
+						    </div>
+						  </div>
+
+						
+		
+	            	</div>
+
+	            </div>
+	        </div>
+	    </div>
+	    <div class="sidebar" >
+	    	<div class="button"><input type="submit" class="btn btn-primary" role="button" value="Create"/> or <a href="@routes.Application.index()">Cancel</a></div><div>
+            
+        </div>
+		</form>
+         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title">Not yet implemented</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p>Fee free to contribute to the project ;)</p>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		<script>
+		$("div.modal-body").emoticonize();
+		</script>
+               
+	</div>
+</div>
+
+}

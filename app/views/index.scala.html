@@ -1,0 +1,96 @@
+@(username: String, persons: Seq[Person])(implicit flash: play.api.mvc.Flash)
+
+@main("List") {
+<header class="navbar navbar-fixed-top">
+  <nav>
+  	<ul class="nav nav-tabs">
+      <li style="float: right;" class="logout"><a href="@routes.Application.logout">Sign out</a></li>
+      <li style="float: right;" class="signedin">Signed in as @username</li>
+    </ul>
+ </nav>
+</header>
+  
+ <div id="Wrapper">
+    <div id="Container">
+	    <div class="left">
+	        <div class="col">
+	            <div class="chat-wrapper">
+	            	<h3><i class="fa fa-phone"></i> Telephone book</h3>
+	            	 @flash.get("success").map { message =>
+        				<div class="alert alert-success">
+            				@message
+        				</div>
+    				}
+	            	  <table class="table table-hover">
+				        <thead>
+				          <tr>
+				            <th>#</th>
+				            <th>Name</th>
+				            <th>Email</th>
+				            <th>Telephone</th>
+				          </tr>
+				        </thead>
+				        <tbody>
+   				        @persons.zipWithIndex.map { case (person,index) =>
+				          <tr>
+				            <td class="number">@(index+1)</td>
+				            <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
+				            <td><a href="@routes.Application.edit(person.dn)">@person.email</a></td>
+				            <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
+				          </tr>
+				         }
+				          
+				        </tbody>
+				      </table>
+	            </div>
+	        </div>
+	    </div>
+	    <div class="sidebar" >
+	    	<div class="button"><a href="@routes.Application.create()" class="btn btn-primary" role="button">New entry</a></div>
+	    	<div>
+              <h3><a href="">Search</a></h3>
+              <input style="margin-top:5px" type="search" id="search" placeholder="Search for a name" >
+              <script>
+              	$("#search").on("keyup", function(evt) { 
+              		// Look up the value
+              		var searchValue = $(this).val()
+              		// display only the rows that contains this value
+              		$("tr").show();
+              		$( "tr:not(:contains('" + searchValue + "'))" ).hide();
+
+              	});
+              </script>
+             </div>
+    		<div>
+              <h3><a href="">Related actions</a></h3>
+              <ul class="related-actions">
+            	<li><i class="fa fa-download"></i> <a data-toggle="modal" data-target="#myModal">Import entries</a></li>
+            	<li><i class="fa fa-upload"></i> <a data-toggle="modal" data-target="#myModal">Export entries</a></li>
+              </ul>
+            </div>
+        </div>
+
+         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title">Not yet implemented</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p>Fee free to contribute to the project ;)</p>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		<script>
+		$("div.modal-body").emoticonize();
+		</script>
+               
+	</div>
+</div>
+
+}
