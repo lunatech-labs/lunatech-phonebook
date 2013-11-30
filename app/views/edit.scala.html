@@ -1,6 +1,6 @@
 @(username: String, person: Form[Person])(implicit flash: play.api.mvc.Flash)
 
-@main("Edit") {
+@main("Edit " + person("fullname").value) {
 <header class="navbar navbar-fixed-top">
   <nav>
   	<ul class="nav nav-tabs">
