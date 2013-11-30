@@ -1,6 +1,6 @@
 @(username: String, person: Form[Person])(implicit flash: play.api.mvc.Flash)
 
-@main("Edit " + person("fullname").value) {
+@main("Edit " + person("fullname").value.getOrElse("Unknown")) {
 <header class="navbar navbar-fixed-top">
   <nav>
   	<ul class="nav nav-tabs">
