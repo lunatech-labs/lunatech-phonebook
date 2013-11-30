@@ -35,7 +35,7 @@
 				          <tr>
 				            <td class="number">@(index+1)</td>
 				            <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
-				            <td><a href="@routes.Application.edit(person.dn)">@person.email</a></td>
+				            <td><a href="mailto:@person.email">@person.email</a></td>
 				            <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
 				          </tr>
 				         }
