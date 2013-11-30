@@ -137,25 +137,45 @@ object Person {
 		
 			if (attributesSet.getAttribute("cn") != null )
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("cn", person.fullname))
-			if (attributesSet.getAttribute("displayName") != null)
+	    	else 
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("cn", person.fullname))
+	    	if (attributesSet.getAttribute("displayName") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("displayName", person.displayname.getOrElse("")))
-			if (attributesSet.getAttribute("homePhone") != null)
+	    	else 
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("displayName", person.displayname.getOrElse("")))
+	    	if (attributesSet.getAttribute("homePhone") != null)
 	  			modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("homePhone", person.homePhone.getOrElse("")))
-			if (attributesSet.getAttribute("homePostalAddress") != null)
+	  		else
+	  			modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("homePhone", person.homePhone.getOrElse("")))
+	  		if (attributesSet.getAttribute("homePostalAddress") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("homePostalAddress", person.address.getOrElse("")))
-			if (attributesSet.getAttribute("mail") != null)
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("homePostalAddress", person.address.getOrElse("")))
+	    	if (attributesSet.getAttribute("mail") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mail", person.email.getOrElse("")))
-			if ( attributesSet.getAttribute("sn") != null)
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mail", person.email.getOrElse("")))
+	    	if ( attributesSet.getAttribute("sn") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("sn", person.lastname.getOrElse("")))
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("sn", person.lastname.getOrElse("")))
 			if (attributesSet.getAttribute("mobile") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mobile", person.mobilePhone.getOrElse("")))
-			if (attributesSet.getAttribute("pager") != null)
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("mobile", person.mobilePhone.getOrElse("")))
+	    	if (attributesSet.getAttribute("pager") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("pager", person.alternatePhone.getOrElse("")))
-			if (attributesSet.getAttribute("telephoneNumber") != null)
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("pager", person.alternatePhone.getOrElse("")))
+	    	if (attributesSet.getAttribute("telephoneNumber") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("telephoneNumber", person.officePhone.getOrElse("")))
-			if (attributesSet.getAttribute("employeeType") != null)
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("telephoneNumber", person.officePhone.getOrElse("")))
+	    	if (attributesSet.getAttribute("employeeType") != null)
 	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("employeeType", person.tags.getOrElse("")))
-
+	    	else
+	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("employeeType", person.tags.getOrElse("")))
+	    	
 		
 			modifications.toArray
 		} finally {
