@@ -36,7 +36,7 @@ object Person {
 	private def filterOnPerson(filter: Option[String]): String = {
 		filter match { 
 			case None => "(&(objectClass=person)(cn=*))"
-			case Some(q)=> "(&(objectClass=person)(|(sn=" + q + "*)))"
+			case Some(q)=> "(&(objectClass=person)(|(cn=" + q + "*)))"
 		}
 	}
 
@@ -71,11 +71,11 @@ object Person {
 		}
     }
 
-    def update(person: Person) {
-		val modificationsArray = updateLDAPModification(person)
+    def update(person: Person) = {
 		val lc = connect()
 		try {
-		    lc.modify(person.dn, modificationsArray)
+			delete(person.dn)
+			add(person)
 		} finally {
 		    lc.disconnect()
 		}
@@ -124,64 +124,6 @@ object Person {
 	}
 
 	
-    private def updateLDAPModification(person: Person) = {
-		val lc = connect()
-		try {
-			val entry = lc.read(person.dn)
-
-			// What change between this person and the entry?
-			// First lookup what we need to delete
-			val attributesSet = entry.getAttributeSet()
-			import scala.collection.mutable.Set
-			val modifications = Set.empty[LDAPModification]     
-		
-			if (attributesSet.getAttribute("cn") != null )
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("cn", person.fullname))
-	    	else 
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("cn", person.fullname))
-	    	if (attributesSet.getAttribute("displayName") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("displayName", person.displayname.getOrElse("")))
-	    	else 
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("displayName", person.displayname.getOrElse("")))
-	    	if (attributesSet.getAttribute("homePhone") != null)
-	  			modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("homePhone", person.homePhone.getOrElse("")))
-	  		else
-	  			modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("homePhone", person.homePhone.getOrElse("")))
-	  		if (attributesSet.getAttribute("homePostalAddress") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("homePostalAddress", person.address.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("homePostalAddress", person.address.getOrElse("")))
-	    	if (attributesSet.getAttribute("mail") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mail", person.email.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mail", person.email.getOrElse("")))
-	    	if ( attributesSet.getAttribute("sn") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("sn", person.lastname.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("sn", person.lastname.getOrElse("")))
-			if (attributesSet.getAttribute("mobile") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("mobile", person.mobilePhone.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("mobile", person.mobilePhone.getOrElse("")))
-	    	if (attributesSet.getAttribute("pager") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("pager", person.alternatePhone.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("pager", person.alternatePhone.getOrElse("")))
-	    	if (attributesSet.getAttribute("telephoneNumber") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("telephoneNumber", person.officePhone.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("telephoneNumber", person.officePhone.getOrElse("")))
-	    	if (attributesSet.getAttribute("employeeType") != null)
-	    		modifications += new LDAPModification(LDAPModification.REPLACE, new LDAPAttribute("employeeType", person.tags.getOrElse("")))
-	    	else
-	    		modifications += new LDAPModification(LDAPModification.ADD, new LDAPAttribute("employeeType", person.tags.getOrElse("")))
-	    	
-		
-			modifications.toArray
-		} finally {
-		    lc.disconnect();
-		}
-    }
 
 	def toPerson(entry: LDAPEntry):Person = {
 		

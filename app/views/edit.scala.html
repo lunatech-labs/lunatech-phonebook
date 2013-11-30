@@ -23,11 +23,11 @@
             				@message
         				</div>
     				}
-    				<form action="@routes.Application.update(person.value.map(_.dn).getOrElse(""))" class="form-horizontal" role="form" method="POST">
-    				<input type="hidden" value="@person.value.map(_.dn).getOrElse("")" name="dn"/>
-	            	<input type="hidden" value="@person.value.map(_.tags).getOrElse("")" name="tags"/>
-	            	<input type="hidden" value="@person.value.map(_.lastname).getOrElse("")" name="lastname"/>
-	            	<input type="hidden" value="@person.value.map(_.alternatePhone).getOrElse("")" name="alternatePhone"/>
+    				<form action="@routes.Application.update(person("dn").value.get)" class="form-horizontal" role="form" method="POST">
+    				<input type="hidden" value="@person("dn").value" name="dn"/>
+	            	<input type="hidden" value="@person("tags").value" name="tags"/>
+	            	<input type="hidden" value="@person("lastname").value" name="lastname"/>
+	            	<input type="hidden" value="@person("alternatePhone").value" name="alternatePhone"/>
 	            	
 	            	
 	            	<div style="margin: 50px 0 20px">

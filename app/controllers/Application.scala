@@ -55,8 +55,8 @@ object Application extends Controller with Secured {
     personForm.bindFromRequest.fold(
       errors => { BadRequest(views.html.edit(username, errors)) },
       person => {
-        Person.update(person)
-        Redirect(routes.Application.edit(person.dn)).flashing("success" -> "This contact has been updated")
+        val updatedPerson = Person.update(person)
+        Redirect(routes.Application.edit(updatedPerson.dn)).flashing("success" -> "Contact has been updated")
       }
     )
   }
@@ -76,7 +76,7 @@ object Application extends Controller with Secured {
       BadRequest(views.html.add(username, errors)) },
       person => {
         val p = Person.add(person)
-        Redirect(routes.Application.add()).flashing("success" -> "This contact has been created")
+        Redirect(routes.Application.edit(p.dn)).flashing("success" -> "Contact has been created")
       }
     )
   }
@@ -96,7 +96,7 @@ object Application extends Controller with Secured {
   def authenticate = Action { implicit request =>
   // We are using our open id
 
-    AsyncResult(OpenID.redirectURL(GOOGLE_OP, "https://phonebook.lunatech.com/callback"/**routes.Application.callback.absoluteURL(true)**/, Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
+    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
       .recover { case e:Throwable => Redirect(routes.Application.login) })
   }
 
