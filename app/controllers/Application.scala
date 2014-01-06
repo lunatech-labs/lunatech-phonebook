@@ -96,7 +96,7 @@ object Application extends Controller with Secured {
   def authenticate = Action { implicit request =>
   // We are using our open id
 
-    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
+    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
       .recover { case e:Throwable => Redirect(routes.Application.login) })
   }
 
@@ -118,7 +118,7 @@ object Application extends Controller with Secured {
           case _ => Redirect(routes.Application.index).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
         }        
       })
-        recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage); Redirect(routes.Application.login) })
+        recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login) })
   }
 
  /**
