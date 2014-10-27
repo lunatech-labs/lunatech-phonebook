@@ -1,4 +1,4 @@
-@(username: String, persons: Seq[Person])(implicit flash: play.api.mvc.Flash)
+@(username: String, persons: Seq[Person], GloginURL:String)(implicit flash: play.api.mvc.Flash)
 
 @main("All contacts") {
 <header class="navbar navbar-fixed-top">
@@ -21,27 +21,57 @@
             				@message
         				</div>
     				}
-	            	  <table class="table table-hover">
-				        <thead>
-				          <tr>
-				            <th>#</th>
-				            <th>Name</th>
-				            <th>Email</th>
-				            <th>Telephone</th>
-				          </tr>
-				        </thead>
-				        <tbody>
-   				        @persons.zipWithIndex.map { case (person,index) =>
-				          <tr>
-				            <td class="number">@(index+1)</td>
-				            <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
-				            <td><a href="mailto:@person.email">@person.email</a></td>
-				            <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
-				          </tr>
-				         }
-				          
-				        </tbody>
-				      </table>
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#ldap" data-toggle="tab">LDAP</a></li>
+                        <li><a id="googlelogin" href="#google" title=@GloginURL data-toggle="tab">google</a></li>
+                        <script>
+                            $("#googlelogin" ).click(function(){
+                                window.location.href = $("#googlelogin" ).attr("title")
+                            })
+                        </script>
+                    </ul>
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="ldap">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Telephone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @persons.zipWithIndex.map { case (person,index) =>
+                                <tr>
+                                    <td class="number">@(index+1)</td>
+                                    <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
+                                    <td><a href="mailto:@person.email">@person.email</a></td>
+                                    <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
+                                </tr>
+                                }
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="google">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Telephone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
 	            </div>
 	        </div>
 	    </div>

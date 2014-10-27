@@ -6,6 +6,7 @@ import models._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
+import play.api.mvc.Result
 
 import play.api.libs.concurrent.Execution.Implicits._
 
@@ -21,14 +22,24 @@ import org.joda.time.{DateMidnight, Interval}
 import play.api.libs.json.JsPath
 import play.api.data.validation.ValidationError
 import play.api.http.{Writeable, ContentTypes, ContentTypeOf}
+import play.api.Play.current
 
+object Application2 extends Controller {
+  def foo = Action {
+    Ok("Hey!")
+  }
+}
 object Application extends Controller with Secured {
 
+  val GOOGLE_OP = "https://www.google.com/accounts/o8/id"
 
- val GOOGLE_OP = "https://www.google.com/accounts/o8/id"
- 
+  val redirectURI = Play.configuration.getString("google.redirectURI").get
+  val clientID = Play.configuration.getString("google.webAppID").get
+  val clientSecret = Play.configuration.getString("google.webAppSecret").get
+
   def index = IsAuthenticated { username => implicit request =>
-    Ok(views.html.index(username, Person.search(None)))
+    val GloginURI = ContactService.getLoginAddress(redirectURI, clientID)
+    Ok(views.html.index(username, Person.search(None), GloginURI))
   }
 
   val personForm = Form(
@@ -48,10 +59,12 @@ object Application extends Controller with Secured {
   )
 
   def edit(dn: String) =  IsAuthenticated { username => implicit request =>
+    Logger.info("Edit!")
     Ok(views.html.edit(username, personForm.fill(Person.getPerson(dn))))
   }
 
   def update(dn: String) = IsAuthenticated { username => implicit request =>
+    Logger.info("Update!")
     personForm.bindFromRequest.fold(
       errors => { BadRequest(views.html.edit(username, errors)) },
       person => {
@@ -81,6 +94,30 @@ object Application extends Controller with Secured {
     )
   }
 
+
+  def gctcallback = Action.async { implicit request =>
+    Logger.info("Still here!")
+    val code: String = request.getQueryString("code").getOrElse("")
+
+    ContactService.getAccessToken(code, redirectURI, clientID, clientSecret).map { response =>
+
+      Logger.info("get response ->" + response.body)
+
+      val accToken = (response.json \ "access_token").as[String]
+      val refToken = (response.json \ "refresh_token").as[String]
+      val tokenType = (response.json \ "token_type").as[String]
+
+      Logger.info("access_token: " + accToken)
+      Logger.info("refresh_token: " + refToken)
+      Logger.info("token_type: " + tokenType)
+      Redirect(routes.Application.getAllContacts)
+        .withSession("access_token" -> accToken, "refresh_token" -> refToken, "token_type" -> tokenType)
+    }
+  }
+
+  def getAllContacts = TODO
+
+
 // -- Authentication
 
   /**
@@ -96,14 +133,13 @@ object Application extends Controller with Secured {
   def authenticate = Action { implicit request =>
   // We are using our open id
 
-    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
+    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
       .recover { case e:Throwable => Redirect(routes.Application.login) })
   }
 
   def callback() = Action { implicit request =>
-
-    Async (
-      OpenID.verifiedId map ( info => {
+    Async(
+      OpenID.verifiedId map (info => {
         val originalUrl = request.session.get("originalUrl")
         session.data.empty
         val email = info.attributes("email")
@@ -112,13 +148,14 @@ object Application extends Controller with Secured {
 
         if (!isOnWhiteList(email))
           throw UnexpectedException(Option("Not allowed"))
-        
+
         originalUrl match {
           case Some(url) => Redirect(url).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
           case _ => Redirect(routes.Application.index).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
-        }        
+        }
       })
-        recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login) })
+        recover { case e: Throwable => e.printStackTrace(); Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login)})
+
   }
 
  /**

@@ -29,7 +29,6 @@ case class Person(fullname: String, lastname: Option[String], officePhone: Optio
     	MessageDigest.getInstance("MD5").digest(email.getOrElse("").getBytes).map("%02X".format(_)).mkString.toLowerCase
 	}
 }
- 
 
 object Person {
 
@@ -69,7 +68,7 @@ object Person {
 		} finally {
 	    	lc.disconnect();
 		}
-    }
+  }
 
     def update(person: Person) = {
 		val lc = connect()
@@ -96,9 +95,9 @@ object Person {
    		person.address.map(x => attributes.add(new LDAPAttribute("homePostalAddress", x)))
    		person.email.map(x => attributes.add(new LDAPAttribute("mail", x)))
    		person.mobilePhone.map(x => attributes.add(new LDAPAttribute("mobile", x)))
-		person.alternatePhone.map(x => attributes.add(new LDAPAttribute("pager", x)))
-		person.officePhone.map(x => attributes.add(new LDAPAttribute("telephoneNumber", x)))
-		person.tags.map(x => attributes.add(new LDAPAttribute("employeeType", x)))
+		  person.alternatePhone.map(x => attributes.add(new LDAPAttribute("pager", x)))
+		  person.officePhone.map(x => attributes.add(new LDAPAttribute("telephoneNumber", x)))
+		  person.tags.map(x => attributes.add(new LDAPAttribute("employeeType", x)))
 
    		val dn = "cn=" + person.fullname + ",ou=Addressbook,dc=lunatech,dc=com"
    		import scala.collection.JavaConversions._
