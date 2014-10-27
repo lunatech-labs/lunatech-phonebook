@@ -26,7 +26,7 @@ object Application extends Controller with Secured {
 
 
  val GOOGLE_OP = "https://www.google.com/accounts/o8/id"
- 
+
   def index = IsAuthenticated { username => implicit request =>
     Ok(views.html.index(username, Person.search(None)))
   }
@@ -37,7 +37,7 @@ object Application extends Controller with Secured {
       "lastname" -> optional(text),
       "officePhone" -> optional(text verifying pattern("""[0-9.+]+""".r, error="A valid phone number is required")),
       "mobilePhone" -> optional(text verifying pattern("""[0-9.+]+""".r, error="A valid phone number is required")),
-      "alternatePhone" -> optional(text verifying pattern("""[0-9.+]+""".r, error="A valid phone number is required")),      
+      "alternatePhone" -> optional(text verifying pattern("""[0-9.+]+""".r, error="A valid phone number is required")),
       "email" -> optional(email),
       "displayname" -> optional(text),
       "address" -> optional(text) ,
@@ -93,32 +93,28 @@ object Application extends Controller with Secured {
   /**
    * Handle login form submission.
    */
-  def authenticate = Action { implicit request =>
+  def authenticate = Action.async { implicit request =>
   // We are using our open id
-
-    AsyncResult(OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
-      .recover { case e:Throwable => Redirect(routes.Application.login) })
+    OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
+      .recover { case e:Throwable => Redirect(routes.Application.login) }
   }
 
-  def callback() = Action { implicit request =>
+  def callback() = Action.async { implicit request =>
+    OpenID.verifiedId map ( info => {
+      val originalUrl = request.session.get("originalUrl")
+      request.session.data.empty
+      val email = info.attributes("email")
+      val firstname = info.attributes("firstname")
+      val lastname = info.attributes("lastname")
 
-    Async (
-      OpenID.verifiedId map ( info => {
-        val originalUrl = request.session.get("originalUrl")
-        session.data.empty
-        val email = info.attributes("email")
-        val firstname = info.attributes("firstname")
-        val lastname = info.attributes("lastname")
+      if (!isOnWhiteList(email))
+        throw UnexpectedException(Option("Not allowed"))
 
-        if (!isOnWhiteList(email))
-          throw UnexpectedException(Option("Not allowed"))
-        
-        originalUrl match {
-          case Some(url) => Redirect(url).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
-          case _ => Redirect(routes.Application.index).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
-        }        
-      })
-        recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login) })
+      originalUrl match {
+        case Some(url) => Redirect(url).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
+        case _ => Redirect(routes.Application.index).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
+      }
+    }) recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login) }
   }
 
  /**
@@ -146,7 +142,7 @@ trait Secured {
   /**
    * Redirect to login if the user in not authorized.
    */
-  private def onUnauthorized(request: RequestHeader) = { 
+  private def onUnauthorized(request: RequestHeader) = {
     Results.Redirect(routes.Application.login).withSession("originalUrl" -> request.uri)
   }
 
@@ -185,4 +181,4 @@ trait Secured {
   }
 
 }
- 
+
