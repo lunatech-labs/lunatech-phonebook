@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.{ByteArrayContent, HttpHeaders, GenericUrl}
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.util.SecurityUtils
 import com.google.common.io.Files
 import java.io.File
 import java.nio.charset.Charset
@@ -24,14 +25,14 @@ object DomainContactsService {
 
   val transport = GoogleNetHttpTransport.newTrustedTransport()
   val privateKey = new File("pkey.p12")
-  val p12Content = Files.readFirstLine(privateKey, Charset.defaultCharset())
 
   // Build service account credential.
   val credential = new GoogleCredential.Builder().setTransport(transport)
     .setJsonFactory(JSON_FACTORY)
     .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
     .setServiceAccountScopes(Collections.singleton(SCOPE))
-    .setServiceAccountPrivateKeyFromP12File(privateKey)
+    // .setServiceAccountPrivateKeyFromP12File(privateKey)
+    .setServiceAccountPrivateKey(SecurityUtils.loadPrivateKeyFromKeyStore(SecurityUtils.getPkcs12KeyStore, this.getClass.getResourceAsStream("pkey.p12"), "notasecret", "privatekey", "notasecret"))
     .setServiceAccountUser("erik.bakker@lunatech.com")
     .build()
   val requestFactory = transport.createRequestFactory(credential)
