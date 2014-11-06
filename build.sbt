@@ -12,4 +12,6 @@ libraryDependencies ++= Seq(
   jdbc,
   anorm,
   cache,
-  ws)
+  ws,
+  "com.google.gdata" % "core" % "1.47.1",
+  "com.google.api-client" % "google-api-client" % "1.19.0")

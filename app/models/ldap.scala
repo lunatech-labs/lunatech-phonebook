@@ -20,6 +20,8 @@ import com.novell.ldap.LDAPException
 import com.novell.ldap.LDAPModification
 import com.novell.ldap.LDAPSearchResults
 
+import scala.xml.{XML, Elem}
+
 
 case class Person(fullname: String, lastname: Option[String], officePhone: Option[String], mobilePhone: Option[String], alternatePhone: Option[String],email: Option[String], 
 	displayname: Option[String], address: Option[String], homePhone: Option[String], tags: Option[String], dn: String) {
@@ -147,18 +149,34 @@ object Person {
     def connect():LDAPConnection = {
 
     	val configuration = Play.current.configuration
-		val ldapHost = configuration.getString("ldap.host")
-		val ldapPort = configuration.getInt("ldap.port")
-		val loginDN = configuration.getString("ldap.login")
-		val password = configuration.getString("ldap.password")
-		val ldapVersion = LDAPConnection.LDAP_V3
+      val ldapHost = configuration.getString("ldap.host")
+      val ldapPort = configuration.getInt("ldap.port")
+      val loginDN = configuration.getString("ldap.login")
+      val password = configuration.getString("ldap.password")
+      val ldapVersion = LDAPConnection.LDAP_V3
 
-		val lc = new LDAPConnection()
-		lc.connect(ldapHost.get, ldapPort.get);
-		lc.bind(ldapVersion, loginDN.get, password.get.getBytes("UTF8"));
+      val lc = new LDAPConnection()
+      lc.connect(ldapHost.get, ldapPort.get);
+      lc.bind(ldapVersion, loginDN.get, password.get.getBytes("UTF8"));
 
-		lc
+      lc
     }
 
+  def toContact(person:Person):DomainContacts = {
+    val id = ""
+    val fullName = person.fullname
+    val officePhone = person.officePhone
+    val mobilePhone = person.mobilePhone
+    val homePhone = person.homePhone
+    val email = person.email
+    val address = person.address
+    val dn = person.dn
+    new DomainContacts(id, fullName, officePhone, mobilePhone, homePhone, email, address, dn)
+  }
+
+  def addcontactsid(id:String, person:Person):Person = {
+    new Person(person.fullname, person.lastname, person.officePhone, person.mobilePhone, person.alternatePhone,
+      person.email, person.displayname, person.address, person.homePhone, Option(id), person.dn)
+  }
 }
 

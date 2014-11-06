@@ -1,4 +1,4 @@
-@(username: String, persons: Seq[Person])(implicit flash: play.api.mvc.Flash)
+@(username: String, persons: Seq[Person], contacts: Seq[DomainContacts])(implicit flash: play.api.mvc.Flash)
 
 @main("All contacts") {
 <header class="navbar navbar-fixed-top">
@@ -21,27 +21,64 @@
             				@message
         				</div>
     				}
-	            	  <table class="table table-hover">
-				        <thead>
-				          <tr>
-				            <th>#</th>
-				            <th>Name</th>
-				            <th>Email</th>
-				            <th>Telephone</th>
-				          </tr>
-				        </thead>
-				        <tbody>
-   				        @persons.zipWithIndex.map { case (person,index) =>
-				          <tr>
-				            <td class="number">@(index+1)</td>
-				            <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
-				            <td><a href="mailto:@person.email">@person.email</a></td>
-				            <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
-				          </tr>
-				         }
-				          
-				        </tbody>
-				      </table>
+
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#ldap" data-toggle="tab">LDAP</a></li>
+                        <li><a href="#google" data-toggle="tab">Google</a></li>
+                    </ul>
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="ldap">
+                            <h2>LDAP</h2>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Telephone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @persons.zipWithIndex.map { case (person,index) =>
+                                <tr>
+                                    <td class="number">@(index+1)</td>
+                                    <td><a href="@routes.Application.edit(person.dn)">@person.fullname</a></td>
+                                    <td><a href="mailto:@person.email">@person.email</a></td>
+                                    <td><a href="@routes.Application.edit(person.dn)">@person.officePhone</a></td>
+                                </tr>
+                                }
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="google">
+                            <h2>Google</h2>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Telephone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @contacts.zipWithIndex.map { case (contact, index) =>
+                                    <tr>
+                                        <td class="number">@(index+1)</td>
+                                        <td><a href="@routes.Application.getContact(contact.id)">@contact.fullName</a></td>
+                                        <td><a href="mailto:@contact.email">@contact.email.getOrElse("")</a></td>
+                                        <td><a href="@routes.Application.getContact(contact.id)">
+                                        @if(contact.officePhone.getOrElse("").trim != "none"){
+                                            @contact.officePhone.get
+                                        }</a></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
 	            </div>
 	        </div>
 	    </div>
