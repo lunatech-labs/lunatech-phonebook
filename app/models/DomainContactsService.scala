@@ -9,6 +9,8 @@ import com.google.common.io.Files
 import java.io.File
 import java.nio.charset.Charset
 import java.util.Collections
+import play.api.Play
+import play.api.Play.current
 
 import scala.xml.{XML, Elem}
 
@@ -24,15 +26,14 @@ object DomainContactsService {
   val QUERYAPI = "https://www.google.com/m8/feeds/contacts/lunatech.com/property-ldap-dn"
 
   val transport = GoogleNetHttpTransport.newTrustedTransport()
-  val privateKey = new File("pkey.p12")
+  val privateKey = Play.getFile("conf/pkey.p12")
 
   // Build service account credential.
   val credential = new GoogleCredential.Builder().setTransport(transport)
     .setJsonFactory(JSON_FACTORY)
     .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
     .setServiceAccountScopes(Collections.singleton(SCOPE))
-    // .setServiceAccountPrivateKeyFromP12File(privateKey)
-    .setServiceAccountPrivateKey(SecurityUtils.loadPrivateKeyFromKeyStore(SecurityUtils.getPkcs12KeyStore, this.getClass.getResourceAsStream("pkey.p12"), "notasecret", "privatekey", "notasecret"))
+    .setServiceAccountPrivateKeyFromP12File(privateKey)
     .setServiceAccountUser("erik.bakker@lunatech.com")
     .build()
   val requestFactory = transport.createRequestFactory(credential)
