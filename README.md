@@ -3,6 +3,7 @@ Lunatech Phonebook
 
 This application allows to edit an LDAP directory. Authentication is done using Google app accounts.
 
+
 Getting started
 ===============
 
