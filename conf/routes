@@ -2,10 +2,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET         /login                    controllers.Application.login()
-GET         /authenticate             controllers.Application.authenticate()
-GET         /callback                 controllers.Application.callback()
-GET         /logout                   controllers.Application.logout()
+GET         /login                                                                 controllers.Application.login()
+GET         /authenticate                                                          controllers.Application.authenticate(code: String, id_token: String, access_token: String)
+GET         /logout		               	controllers.Application.logout()
 
 
 # Home page

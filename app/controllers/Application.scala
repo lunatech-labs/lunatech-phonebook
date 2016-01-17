@@ -9,24 +9,34 @@ import models._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
+import java.math.BigInteger
+import java.security.SecureRandom
 
 import play.api.libs.concurrent.Execution.Implicits._
 
 import java.net.URL
 import libs.openid.OpenID
+import com.google.api.client.auth.oauth2.TokenResponseException
+import com.google.api.client.googleapis.auth.oauth2.{GoogleCredential, GoogleAuthorizationCodeTokenRequest, GoogleTokenResponse}
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.oauth2.Oauth2
+import com.google.api.services.oauth2.model.Tokeninfo
 import com.google.gdata.client.appsforyourdomain.UserService
 import com.google.gdata.client.authn.oauth.GoogleOAuthParameters
 import com.google.gdata.client.authn.oauth.OAuthHmacSha1Signer
 import com.google.gdata.client.authn.oauth.OAuthParameters.OAuthType
+import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry
 import com.google.gdata.data.appsforyourdomain.provisioning.UserFeed
+
+import com.lunatech.openconnect.Authenticate
+
+import play.api.Play.current
 
 import scala.io.Source
 
 
 object Application extends Controller with Secured {
-
-
- val GOOGLE_OP = "https://www.google.com/accounts/o8/id"
 
   def index = IsAuthenticated { username => implicit request =>
     val content = DomainContactsService.getAllContacts
@@ -230,39 +240,35 @@ object Application extends Controller with Secured {
 
 // -- Authentication
 
+
   /**
    * Login page.
    */
   def login = Action { implicit request =>
-    Ok(views.html.login())
+    if(Play.isProd) {
+      val clientId: String = Play.configuration.getString("google.clientId").get
+      val state: String = new BigInteger(130, new SecureRandom()).toString(32)
+
+      Ok(views.html.login(clientId)).withSession("state" -> state)
+    } else {
+      Redirect(routes.Application.index).withSession("email" -> "developer@lunatech.com")
+    }
   }
 
-  /**
-   * Handle login form submission.
-   */
-  def authenticate = Action.async { implicit request =>
-  // We are using our open id
-    OpenID.redirectURL(GOOGLE_OP, routes.Application.callback.absoluteURL(true), Seq("email" -> "http://schema.openid.net/contact/email", "firstname" -> "http://schema.openid.net/namePerson/first", "lastname" -> "http://schema.openid.net/namePerson/last")).map(url => Redirect(url))
-      .recover { case e:Throwable => Redirect(routes.Application.login) }
-  }
+  def authenticate(code: String, id_token: String, access_token: String) = Action { implicit request =>
 
-  def callback() = Action.async { implicit request =>
-    OpenID.verifiedId map ( info => {
-      val originalUrl = request.session.get("originalUrl")
-      request.session.data.empty
-      val email = info.attributes("email")
-      val firstname = info.attributes("firstname")
-      val lastname = info.attributes("lastname")
+    Async {
+      val response = Authenticate.authenticateToken(code, id_token, access_token)
 
-      if (!isOnWhiteList(email))
-        throw UnexpectedException(Option("Not allowed"))
-
-      originalUrl match {
-        case Some(url) => Redirect(url).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
-        case _ => Redirect(routes.Application.index).withSession("email" -> email, "firstname" -> firstname, "lastname" -> lastname)
+      response.map {
+          case Left(parameters) => Redirect(routes.Application.index).withSession(parameters.toArray: _*)
+          case Right(message) => Redirect(routes.Application.login).withNewSession.flashing("error" -> message.toString())
+        }
       }
-    }) recover { case e:Throwable => e.printStackTrace();Logger.error("error " + e.getMessage, e); Redirect(routes.Application.login) }
   }
+
+
+
 
  /**
    * Logout and clean the session.
@@ -272,13 +278,9 @@ object Application extends Controller with Secured {
       "success" -> "You've been logged out"
     )
   }
-
 }
 
 
-/**
- * Provide security features
- */
 trait Secured {
 
   /**
@@ -298,9 +300,10 @@ trait Secured {
   /**
    * Action for authenticated users.
    */
-  def IsAuthenticated(f: => String => Request[AnyContent] => Result) = Security.Authenticated(username, onUnauthorized) { user =>
-    Action(request => f(user)(request))
-  }
+   def IsAuthenticated(f: => String => Request[AnyContent] => Result) =
+     Security.Authenticated(username, onUnauthorized) { user =>
+     Action(request => f(user)(request))
+   }
 
   def isOnWhiteList(email:String) = {
     import play.api.Play.current
@@ -328,4 +331,3 @@ trait Secured {
   }
 
 }
-
